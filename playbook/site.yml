@@ -1,0 +1,63 @@
+---
+- name: Install Clickhouse
+  hosts: clickhouse
+  vars_files:
+    - /root/08-ansible-02-playbook/playbook/group_vars/clickhouse/vars.yml  # Указание файла переменных для данного play
+
+  handlers:
+    - name: Start clickhouse service
+      become: true
+      ansible.builtin.service:
+        name: clickhouse-server
+        state: restarted
+
+  tasks:
+    - name: Get clickhouse distrib
+      ansible.builtin.get_url:
+        url: "https://packages.clickhouse.com/rpm/stable/{{ item }}"
+        dest: "/tmp/{{ item }}"
+      loop: "{{ clickhouse_packages }}"
+
+    - name: Install clickhouse packages
+      become: true
+      ansible.builtin.yum:
+        name:
+          - "/tmp/clickhouse-client-{{ clickhouse_version }}.noarch.rpm"
+          - "/tmp/clickhouse-server-{{ clickhouse_version }}.noarch.rpm"
+          - "/tmp/clickhouse-common-static-{{ clickhouse_version }}.x86_64.rpm"
+      notify: Start clickhouse service
+
+    - name: Flush handlers
+      meta: flush_handlers
+
+    - name: Create database
+      ansible.builtin.command: "clickhouse-client -q 'create database logs;'"
+      register: create_db
+      failed_when: create_db.rc != 0 and create_db.rc != 82
+      changed_when: create_db.rc == 0
+
+- name: Install and Configure Vector
+  hosts: clickhouse
+  vars_files:
+    - /root/08-ansible-02-playbook/playbook/group_vars/vector/vars.yml  # Указание файла переменных для данного play
+
+  tasks:
+    - name: Download Vector RPM
+      ansible.builtin.get_url:
+        url: "{{ vector_rpm_url }}"
+        dest: "/tmp/vector-{{ vector_version }}-1.x86_64.rpm"
+
+    - name: Install Vector RPM
+      become: true
+      ansible.builtin.yum:
+        name: "/tmp/vector-{{ vector_version }}-1.x86_64.rpm"
+        state: present
+
+    - name: Deploy Vector Configuration
+      become: true
+      ansible.builtin.template:
+        src: "{{ vector_config_template }}"
+        dest: "{{ vector_config_destination }}"
+
+
+
