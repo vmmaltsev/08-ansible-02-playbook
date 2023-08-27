@@ -37,3 +37,24 @@ Ansible Playbook для установки Clickhouse и Vector
     install: выполнить только задачи установки.
     config: применить только конфигурационные изменения.
     start_services: запустить или перезапустить службы.
+
+
+
+
+Основная часть
+Подготовьте свой inventory-файл prod.yml.
+Допишите playbook: нужно сделать ещё один play, который устанавливает и настраивает vector. Конфигурация vector должна деплоиться через template файл jinja2.
+При создании tasks рекомендую использовать модули: get_url, template, unarchive, file.
+Tasks должны: скачать дистрибутив нужной версии, выполнить распаковку в выбранную директорию, установить vector.
+Запустите ansible-lint site.yml и исправьте ошибки, если они есть.
+
+Попробуйте запустить playbook на этом окружении с флагом --check.
+Запустите playbook на prod.yml окружении с флагом --diff. Убедитесь, что изменения на системе произведены.
+Повторно запустите playbook с флагом --diff и убедитесь, что playbook идемпотентен.
+Подготовьте README.md-файл по своему playbook. В нём должно быть описано: что делает playbook, какие у него есть параметры и теги. Пример качественной документации ansible playbook по ссылке.
+Готовый playbook выложите в свой репозиторий, поставьте тег 08-ansible-02-playbook на фиксирующий коммит, в ответ предоставьте ссылку на него.
+
+
+![alt text](https://github.com/vmmaltsev/screenshot/blob/main/Screenshot_20.png)
+![alt text](https://github.com/vmmaltsev/screenshot/blob/main/Screenshot_21.png)
+![alt text](https://github.com/vmmaltsev/screenshot/blob/main/Screenshot_22.png)
